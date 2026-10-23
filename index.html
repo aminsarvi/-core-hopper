@@ -1,0 +1,2994 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Core Hopper: ربات فراری</title>
+    <!-- آیکون تب مرورگر -->
+<link rel="icon" type="image/png" href="icon.ico">
+
+<!-- آیکون هنگام ذخیره روی صفحه اصلی گوشی (iOS و Android) -->
+<link rel="apple-touch-icon" href="icon.ico">
+
+    <style>
+      @font-face {
+        font-family: "IRANYekan";
+        src:
+          url("./assets/fonts/IRANYekanWebRegular.woff2") format("woff2"),
+          url("./assets/fonts/IRANYekanWebRegular.woff") format("woff");
+        font-weight: 400;
+        font-style: normal;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: "IRANYekan";
+        src:
+          url("./assets/fonts/IRANYekanWebBold.woff2") format("woff2"),
+          url("./assets/fonts/IRANYekanWebBold.woff") format("woff");
+        font-weight: 700;
+        font-style: normal;
+        font-display: swap;
+      }
+
+      :root {
+        --neon-cyan: #00f3ff;
+        --neon-pink: #ff0055;
+        --neon-purple: #9d00ff;
+        --neon-amber: #ffaa00;
+        --neon-green: #00ff66;
+        --bg-dark: #05060f;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        user-select: none;
+        -webkit-user-select: none;
+        touch-action: manipulation;
+      }
+
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background-color: var(--bg-dark);
+        font-family: "IRANYekan", sans-serif;
+        color: #fff;
+      }
+
+      body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-between;
+        position: relative;
+      }
+
+      /* هدر واکنش‌گرا و شناور */
+      .cyber-header {
+        width: 96vw;
+        max-width: 1100px;
+        height: 52px;
+        margin-top: 8px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 6px 18px;
+        background: rgba(10, 12, 28, 0.85);
+        border: 1px solid rgba(0, 243, 255, 0.35);
+        border-radius: 12px;
+        backdrop-filter: blur(12px);
+        box-shadow: 0 0 20px rgba(0, 243, 255, 0.15);
+        z-index: 20;
+      }
+
+      .cyber-badge {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      .cyber-badge span {
+        color: var(--neon-cyan);
+        text-shadow: 0 0 8px var(--neon-cyan);
+      }
+
+      .sector-title {
+        font-size: 13px;
+        color: var(--neon-amber);
+        background: rgba(255, 170, 0, 0.12);
+        padding: 2px 10px;
+        border-radius: 6px;
+        border: 1px solid rgba(255, 170, 0, 0.3);
+        display: inline-block;
+      }
+
+      .btn-group {
+        display: flex;
+        gap: 8px;
+      }
+
+      button.cyber-btn {
+        background: linear-gradient(
+          135deg,
+          rgba(0, 243, 255, 0.18),
+          rgba(157, 0, 255, 0.28)
+        );
+        border: 1px solid var(--neon-cyan);
+        color: #fff;
+        font-family: "IRANYekan", sans-serif;
+        font-size: 13px;
+        font-weight: 700;
+        padding: 6px 14px;
+        border-radius: 8px;
+        cursor: pointer;
+        box-shadow: 0 0 10px rgba(0, 243, 255, 0.2);
+        transition: all 0.2s ease;
+      }
+
+      button.cyber-btn:hover {
+        background: linear-gradient(
+          135deg,
+          var(--neon-cyan),
+          var(--neon-purple)
+        );
+        color: #000;
+        box-shadow: 0 0 20px rgba(0, 243, 255, 0.6);
+      }
+
+      /* نگهدارنده بوم بازی (کانتینر ریسپانسیو اصلی) */
+      .viewport {
+        position: relative;
+        flex: 1;
+        width: 96vw;
+        max-width: 1100px;
+        margin: 6px 0;
+        border-radius: 14px;
+        overflow: hidden;
+        border: 2px solid rgba(0, 243, 255, 0.4);
+        box-shadow: 0 0 30px rgba(0, 243, 255, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #04050c;
+      }
+
+      canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+      }
+
+      .scanlines {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        background: linear-gradient(
+          rgba(18, 16, 16, 0) 50%,
+          rgba(0, 0, 0, 0.3) 50%
+        );
+        background-size: 100% 3px;
+        opacity: 0.55;
+      }
+
+      /* پاپ‌آپ‌های روی صفحه */
+      #stage-select-screen {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(5, 6, 15, 0.96);
+        backdrop-filter: blur(15px);
+        z-index: 50;
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+        overflow-y: auto;
+      }
+
+      #stage-select-screen h1 {
+        font-size: 22px;
+        color: var(--neon-cyan);
+        text-shadow: 0 0 15px var(--neon-cyan);
+        margin-bottom: 6px;
+      }
+
+      #stage-select-screen p {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 13px;
+        margin-bottom: 16px;
+      }
+
+      .stages-grid {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 10px;
+        max-width: 750px;
+        width: 100%;
+      }
+
+      @media (max-width: 680px) {
+        .stages-grid {
+          grid-template-columns: repeat(5, 1fr);
+        }
+      }
+
+      .stage-card {
+        background: rgba(13, 19, 38, 0.85);
+        border: 1px solid rgba(0, 243, 255, 0.3);
+        border-radius: 8px;
+        padding: 10px 0;
+        text-align: center;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: 700;
+        color: #fff;
+        transition: all 0.2s;
+      }
+
+      .stage-card:hover {
+        background: var(--neon-cyan);
+        color: #000;
+        box-shadow: 0 0 16px var(--neon-cyan);
+        transform: scale(1.05);
+      }
+
+      /* Modal راهنما */
+      #modal-help {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.85);
+        backdrop-filter: blur(8px);
+        z-index: 100;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+      }
+
+      .modal-content {
+        background: #0a0c1c;
+        border: 2px solid var(--neon-cyan);
+        border-radius: 16px;
+        padding: 24px;
+        max-width: 480px;
+        width: 100%;
+        box-shadow: 0 0 35px rgba(0, 243, 255, 0.3);
+        text-align: right;
+      }
+
+      .modal-content h2 {
+        color: var(--neon-cyan);
+        margin-bottom: 12px;
+        font-size: 20px;
+      }
+
+      .modal-content p,
+      .modal-content li {
+        font-size: 13.5px;
+        color: rgba(255, 255, 255, 0.85);
+        line-height: 1.8;
+        margin-bottom: 6px;
+      }
+
+      .modal-content ul {
+        margin-right: 18px;
+        margin-bottom: 14px;
+      }
+
+      .modal-content kbd {
+        background: rgba(0, 243, 255, 0.15);
+        border: 1px solid var(--neon-cyan);
+        color: var(--neon-cyan);
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-family: monospace;
+      }
+
+      /* کنترل‌های لمسی موبایل (ریسپانسیو پایین صفحه) */
+      .mobile-controls {
+        display: none;
+        width: 96vw;
+        max-width: 1100px;
+        height: 72px;
+        padding: 0 14px;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+        z-index: 30;
+      }
+
+      @media (pointer: coarse), (max-width: 850px) {
+        .mobile-controls {
+          display: flex;
+        }
+      }
+
+      .d-pad,
+      .action-pad {
+        display: flex;
+        gap: 14px;
+      }
+
+      .ctrl-btn {
+        background: rgba(10, 12, 28, 0.85);
+        border: 2px solid var(--neon-cyan);
+        color: var(--neon-cyan);
+        font-size: 22px;
+        font-weight: bold;
+        width: 58px;
+        height: 58px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 0 15px rgba(0, 243, 255, 0.2);
+        cursor: pointer;
+        user-select: none;
+      }
+
+      /* اصلاح جهت دکمه‌های لمسی در حالت راست‌به‌چپ: چپ همیشه سمت چپ صفحه */
+      html[dir="rtl"] .d-pad {
+        flex-direction: row;
+        direction: ltr;
+      }
+      html[dir="rtl"] .action-pad {
+        direction: ltr;
+      }
+
+      .ctrl-btn:active {
+        background: var(--neon-cyan);
+        color: #000;
+        transform: scale(0.94);
+      }
+
+      /* ===== افزوده‌ها: هماهنگ با ظاهر سایبرپانک ===== */
+      .cyber-badge {
+        min-width: 0;
+      }
+      #ui-sector-name {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 42vw;
+      }
+      .btn-group {
+        align-items: center;
+      }
+      .btn-group .cyber-btn {
+        white-space: nowrap;
+        line-height: 1.2;
+      }
+      .header-icon {
+        font-style: normal;
+        font-size: 1em;
+      }
+
+      @media (max-width: 850px) {
+        .cyber-header {
+          height: 46px;
+          padding: 5px 12px;
+          gap: 8px;
+        }
+        .cyber-badge {
+          font-size: 12px;
+          gap: 6px;
+        }
+        .sector-title {
+          font-size: 11px;
+          padding: 1px 7px;
+        }
+        .btn-group {
+          gap: 6px;
+        }
+        button.cyber-btn {
+          font-size: 11.5px;
+          padding: 5px 10px;
+          border-radius: 7px;
+        }
+      }
+
+      @media (max-width: 600px) {
+        .cyber-header {
+          height: auto;
+          min-height: 44px;
+          padding: 6px 9px;
+          gap: 6px;
+          flex-wrap: nowrap;
+        }
+        .cyber-badge {
+          font-size: 11px;
+          gap: 5px;
+          flex: 1 1 auto;
+        }
+        .sector-title {
+          display: none;
+        }
+        .btn-group {
+          gap: 5px;
+          flex: 0 0 auto;
+        }
+        button.cyber-btn {
+          font-size: 10.5px;
+          padding: 5px 7px;
+          border-radius: 6px;
+        }
+      }
+
+      @media (max-width: 400px) {
+        .cyber-badge {
+          font-size: 10.5px;
+        }
+        button.cyber-btn {
+          font-size: 9.5px;
+          padding: 4px 6px;
+        }
+        .header-icon {
+          font-size: 1.15em;
+        }
+      }
+
+      /* کارت مراحل: نشان تکمیل */
+      .stage-card {
+        position: relative;
+      }
+      .stage-card.completed {
+        border-color: var(--neon-green);
+        background: rgba(0, 255, 102, 0.1);
+        box-shadow: 0 0 10px rgba(0, 255, 102, 0.35);
+        color: var(--neon-green);
+      }
+      .stage-card.completed::after {
+        content: "✓";
+        position: absolute;
+        top: -6px;
+        left: -6px;
+        width: 16px;
+        height: 16px;
+        font-size: 10px;
+        line-height: 16px;
+        border-radius: 50%;
+        background: var(--neon-green);
+        color: #000;
+        box-shadow: 0 0 8px var(--neon-green);
+      }
+      .stage-card .stage-stars {
+        display: block;
+        font-size: 8px;
+        letter-spacing: 1px;
+        color: var(--neon-amber);
+        margin-top: 2px;
+        min-height: 9px;
+      }
+      .stage-current {
+        outline: 2px solid var(--neon-amber);
+        outline-offset: 1px;
+      }
+
+      /* انتخاب کاراکتر */
+      .chars-bar {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 14px;
+        max-width: 750px;
+        width: 100%;
+      }
+      .chars-bar span {
+        color: var(--neon-purple);
+        font-size: 13px;
+        font-weight: 700;
+        text-shadow: 0 0 8px rgba(157, 0, 255, 0.7);
+        white-space: nowrap;
+      }
+      .chars-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+        gap: 8px;
+        width: 100%;
+        max-width: 680px;
+        max-height: 65vh;
+        overflow-y: auto;
+        overflow-x: hidden;
+        box-sizing: border-box;
+        padding: 8px 4px;
+        margin: 10px auto;
+      }
+      .char-card {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
+        box-sizing: border-box;
+        min-width: 0;
+        width: 100%;
+        padding: 4px 2px;
+        border-radius: 7px;
+        background: rgba(13, 19, 38, 0.85);
+        border: 1px solid rgba(157, 0, 255, 0.35);
+        cursor: pointer;
+        font-size: 10px;
+        color: #fff;
+        transition: all 0.2s;
+      }
+      .char-card:hover {
+        border-color: var(--neon-purple);
+        box-shadow: 0 0 10px rgba(157, 0, 255, 0.6);
+      }
+      .char-card canvas {
+        display: block;
+        width: 26px;
+        height: 26px;
+      }
+      .char-card.selected {
+        border-color: var(--neon-cyan);
+        box-shadow: 0 0 12px var(--neon-cyan);
+      }
+      .char-card.selected::after {
+        content: "✓";
+        position: absolute;
+        top: -5px;
+        left: -5px;
+        width: 13px;
+        height: 13px;
+        font-size: 8px;
+        line-height: 13px;
+        text-align: center;
+        border-radius: 50%;
+        background: var(--neon-cyan);
+        color: #000;
+      }
+      @media (max-width: 680px) {
+        .chars-bar {
+          margin-top: 10px;
+        }
+      }
+
+      /* مودال‌های عمومی */
+      #modal-character-select {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.85);
+        backdrop-filter: blur(8px);
+        z-index: 130;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+      }
+      #modal-character-select .modal-content {
+        text-align: center;
+        max-width: 95vw;
+        box-sizing: border-box;
+      }
+      .stage-nav-row {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        margin-bottom: 14px;
+        max-width: 750px;
+        width: 100%;
+      }
+      #modal-stage-ready,
+      #modal-pause {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.85);
+        backdrop-filter: blur(8px);
+        z-index: 120;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+      }
+      #modal-stage-ready .modal-content,
+      #modal-pause .modal-content {
+        text-align: center;
+      }
+      #modal-pause .modal-content {
+        border-color: var(--neon-purple);
+        box-shadow: 0 0 35px rgba(157, 0, 255, 0.35);
+      }
+      #modal-pause h2 {
+        color: var(--neon-purple);
+        text-shadow: 0 0 12px rgba(157, 0, 255, 0.8);
+      }
+      .pause-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 9px;
+        margin-top: 14px;
+      }
+      .pause-buttons .cyber-btn {
+        width: 100%;
+        font-size: 14px;
+        padding: 10px 14px;
+      }
+      .pause-buttons .danger {
+        border-color: var(--neon-pink);
+        box-shadow: 0 0 10px rgba(255, 0, 85, 0.2);
+      }
+      .ready-stage-name {
+        color: var(--neon-amber);
+        font-size: 13px;
+        margin-bottom: 4px !important;
+      }
+      .ready-big {
+        font-size: 24px !important;
+        color: #fff !important;
+        font-weight: 700;
+        margin-bottom: 6px !important;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Modal راهنما -->
+    <div id="modal-help">
+      <div class="modal-content">
+        <h2>راهنمای عملیات فرار</h2>
+        <p>
+          <b>هدف:</b> تمام تکه‌های داده نئونی (دیتاشارد) را جمع کرده و از درگاه
+          خروجی بگذرید.
+        </p>
+        <ul>
+          <li>حرکت: <kbd>A</kbd> <kbd>D</kbd> یا کلیدهای پیکان راست و چپ</li>
+          <li>
+            پرش و پرش دوبل: <kbd>Space</kbd> یا <kbd>W</kbd> یا پیکان بالا
+          </li>
+          <li>پرش دیواری: چسبیدن به دیوارهای بلند و زدن مجدد پرش</li>
+          <li>پدهای زرد/سبز: پرتابگرهای تقویت شتاب نئونی</li>
+          <li>ریست اضطراری مرحله: دکمه <kbd>R</kbd></li>
+        </ul>
+        <button
+          class="cyber-btn"
+          id="btn-close-modal"
+          style="width: 100%; margin-top: 8px"
+        >
+          دریافت و تایید
+        </button>
+      </div>
+    </div>
+
+    <!-- تاییدیه آماده بودن برای ورود به مرحله -->
+    <div id="modal-stage-ready">
+      <div class="modal-content">
+        <h2>آماده‌اید؟</h2>
+        <p class="ready-stage-name" id="ready-stage-name">سکتور ۰۱</p>
+        <p>
+          کاراکتر فعال:
+          <b id="ready-char-name" style="color: var(--neon-cyan)">پیکسل</b>
+        </p>
+        <p class="ready-big">آماده ایم؟</p>
+        <div class="pause-buttons">
+          <button class="cyber-btn" id="btn-ready-start">
+            آماده‌ایم! شروع 🚀
+          </button>
+          <button class="cyber-btn" id="btn-ready-cancel">انصراف</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- مودال انتخاب کاراکتر -->
+    <div id="modal-character-select">
+      <div class="modal-content">
+        <h2>🎭 انتخاب کاراکتر / روبات</h2>
+        <p>
+          کاراکتر فعال:
+          <b id="ui-active-char" style="color: var(--neon-cyan)">پیکسل</b>
+        </p>
+        <div
+          class="chars-grid"
+          id="chars-grid-container"
+          style="margin: 10px 0"
+        ></div>
+        <button class="cyber-btn" id="btn-char-close" style="width: 100%">
+          بستن
+        </button>
+      </div>
+    </div>
+
+    <!-- منوی توقف مرحله -->
+    <div id="modal-pause">
+      <div class="modal-content">
+        <h2>⏸ توقف عملیات</h2>
+        <p>
+          مرحله <b id="pause-stage-no" style="color: var(--neon-cyan)">۰۱</b>
+          <span id="pause-stage-name"></span>
+        </p>
+        <div class="pause-buttons">
+          <button class="cyber-btn" id="btn-pause-resume">▶ ادامه</button>
+          <button class="cyber-btn" id="btn-pause-restart">
+            ↺ شروع مجدد مرحله
+          </button>
+          <button class="cyber-btn" id="btn-pause-prev">⏮️ مرحله قبل</button>
+          <button class="cyber-btn" id="btn-pause-next">⏭ مرحله بعد</button>
+          <button class="cyber-btn" id="btn-pause-home">
+            ⌂ صفحه اصلی / انتخاب مرحله
+          </button>
+          <button class="cyber-btn" id="btn-pause-chars">
+            ☺ تغییر کاراکتر
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- هدر اطلاعاتی -->
+    <div class="cyber-header">
+      <div class="cyber-badge">
+        مرحله: <span id="ui-stage">01</span>
+        <span class="sector-title" id="ui-sector-name">بخش آموزش ورودی</span>
+      </div>
+      <div class="btn-group">
+        <button class="cyber-btn" id="btn-pause" title="توقف">
+          <i class="header-icon">⏸</i> توقف
+        </button>
+        <button class="cyber-btn" id="btn-char-header" title="انتخاب کاراکتر">
+          <i class="header-icon">🎭</i> <span class="btn-text">کاراکتر</span>
+        </button>
+        <button class="cyber-btn" id="btn-stages" title="انتخاب مرحله">
+          <i class="header-icon">▦</i> <span class="btn-text">مراحل</span>
+        </button>
+        <button class="cyber-btn" id="btn-help" title="راهنما">
+          <i class="header-icon">؟</i> <span class="btn-text">راهنما</span>
+        </button>
+        <button class="cyber-btn" id="btn-audio" title="صدا">
+          صدا: خاموش 🔇
+        </button>
+      </div>
+    </div>
+
+    <!-- کانتینر ویوپورت و بوم مقیاس‌پذیر -->
+    <div class="viewport" id="viewport-box">
+      <div id="stage-select-screen">
+        <h1>پروتکل انتخاب سکتور (۱ تا ۳۰)</h1>
+        <p>هر سکتور دارای معماری، جاذبه یا تله‌های منحصر‌به‌فرد است:</p>
+        <div class="stage-nav-row">
+          <button class="cyber-btn" id="btn-stages-prev">⏮️ سکتور قبلی</button>
+          <span
+            id="ui-stages-current"
+            style="color: var(--neon-amber); font-weight: 700"
+            >سکتور ۱</span
+          >
+          <button class="cyber-btn" id="btn-stages-next">سکتور بعدی ⏭</button>
+        </div>
+        <div class="stages-grid" id="stages-grid-container"></div>
+        <button
+          class="cyber-btn"
+          id="btn-close-stages"
+          style="margin-top: 18px; width: 140px"
+        >
+          بستن
+        </button>
+      </div>
+
+      <canvas id="canvas"></canvas>
+      <div class="scanlines"></div>
+    </div>
+
+    <!-- دکمه‌های لمسی برای تبلت و موبایل -->
+    <div class="mobile-controls">
+      <div class="d-pad">
+        <button class="ctrl-btn" id="m-left">◀</button>
+        <button class="ctrl-btn" id="m-right">▶</button>
+      </div>
+      <div class="action-pad">
+        <button
+          class="ctrl-btn"
+          id="m-jump"
+          style="border-color: var(--neon-purple); color: var(--neon-purple)"
+        >
+          ▲
+        </button>
+      </div>
+    </div>
+
+    <script>
+      /* ========================================================
+      1. موتور صوتی پیشرفته سینت‌سایزر
+      ======================================================== */
+      class SoundEngine {
+        constructor() {
+          this.ctx = null;
+          this.enabled = false;
+        }
+        init() {
+          if (!this.ctx) {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            this.ctx = new AudioCtx();
+          }
+          if (this.ctx.state === "suspended") {
+            this.ctx.resume();
+          }
+          this.enabled = !this.enabled;
+          return this.enabled;
+        }
+        playTone(freq, type, duration, endFreq = null, gainVal = 0.15) {
+          if (!this.enabled || !this.ctx) return;
+          try {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+            if (endFreq) {
+              osc.frequency.exponentialRampToValueAtTime(
+                Math.max(10, endFreq),
+                this.ctx.currentTime + duration,
+              );
+            }
+            gain.gain.setValueAtTime(gainVal, this.ctx.currentTime);
+            gain.gain.linearRampToValueAtTime(
+              0.001,
+              this.ctx.currentTime + duration,
+            );
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start();
+            osc.stop(this.ctx.currentTime + duration);
+          } catch (e) {}
+        }
+        jump() {
+          this.playTone(220, "sine", 0.14, 580, 0.12);
+        }
+        doubleJump() {
+          this.playTone(460, "triangle", 0.16, 920, 0.14);
+        }
+        launchPad() {
+          this.playTone(320, "square", 0.22, 1100, 0.18);
+        }
+        wallSlide() {
+          if (Math.random() < 0.1)
+            this.playTone(130, "sawtooth", 0.05, 70, 0.03);
+        }
+        collect() {
+          this.playTone(600, "sine", 0.07, null, 0.14);
+          setTimeout(() => this.playTone(900, "sine", 0.12, 1300, 0.14), 50);
+        }
+        death() {
+          this.playTone(180, "sawtooth", 0.35, 30, 0.25);
+          this.playTone(90, "square", 0.45, 10, 0.2);
+        }
+        gateOpen() {
+          this.playTone(300, "sine", 0.5, 950, 0.2);
+        }
+        win() {
+          [440, 554, 659, 880].forEach((f, i) => {
+            setTimeout(
+              () => this.playTone(f, "triangle", 0.25, f * 1.25, 0.18),
+              i * 100,
+            );
+          });
+        }
+      }
+      const audio = new SoundEngine();
+
+      /* ========================================================
+      2. سیستم ذرات نوری (Particle FX)
+      ======================================================== */
+      class ParticleSystem {
+        constructor() {
+          this.particles = [];
+        }
+        emit(x, y, count, color, speed = 2, decay = 0.03, size = 3) {
+          for (let i = 0; i < count; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const spd = (Math.random() * 0.7 + 0.3) * speed;
+            this.particles.push({
+              x,
+              y,
+              vx: Math.cos(angle) * spd,
+              vy: Math.sin(angle) * spd,
+              color,
+              size: Math.random() * size + 1.5,
+              alpha: 1,
+              decay: Math.random() * decay + decay * 0.5,
+            });
+          }
+        }
+        update() {
+          for (let i = this.particles.length - 1; i >= 0; i--) {
+            const p = this.particles[i];
+            p.x += p.vx;
+            p.y += p.vy;
+            p.alpha -= p.decay;
+            p.size *= 0.97;
+            if (p.alpha <= 0 || p.size <= 0.4) {
+              this.particles.splice(i, 1);
+            }
+          }
+        }
+        draw(ctx) {
+          ctx.save();
+          for (const p of this.particles) {
+            ctx.globalAlpha = Math.max(0, p.alpha);
+            ctx.fillStyle = p.color;
+            ctx.shadowColor = p.color;
+            ctx.shadowBlur = 8;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          ctx.restore();
+        }
+      }
+      const ps = new ParticleSystem();
+
+      /* ========================================================
+      3. دوربین تعقیب‌کننده پویا (Camera Tracking)
+      ======================================================== */
+      class Camera {
+        constructor(viewW, viewH) {
+          this.x = 0;
+          this.y = 0;
+          this.viewW = viewW;
+          this.viewH = viewH;
+          this.smooth = 0.1;
+        }
+        update(targetX, targetY, worldW, worldH) {
+          const idealX = targetX - this.viewW / 2;
+          const idealY = targetY - this.viewH / 2;
+          this.x += (idealX - this.x) * this.smooth;
+          this.y += (idealY - this.y) * this.smooth;
+
+          this.x = Math.max(0, Math.min(worldW - this.viewW, this.x));
+          this.y = Math.max(0, Math.min(worldH - this.viewH, this.y));
+        }
+      }
+
+      /* ========================================================
+      4. قهرمان رباتیک (CyberCube) با تطبیق جاذبه و سکوها
+      ======================================================== */
+      class CyberCube {
+        constructor(x, y) {
+          this.spawnX = x;
+          this.spawnY = y;
+          this.w = 26;
+          this.h = 26;
+          this.accel = 0.85;
+          this.maxSpeed = 5.0;
+          this.friction = 0.82;
+          this.airFriction = 0.94;
+          this.baseGravity = 2.8;
+          this.maxFall = 52;
+          this.jumpForce = 27.0;
+          this.doubleJumpForce = 23.0;
+          this.reset();
+        }
+        reset() {
+          this.x = this.spawnX;
+          this.y = this.spawnY;
+          this.vx = 0;
+          this.vy = 0;
+          this.isGrounded = false;
+          this.onWall = 0;
+          this.wallContact = 0;
+          this.wallSlideSpeed = 3.2;
+          this.wallJumpLock = 0;
+          this.wallSlideSpeed = 2.5;
+          this.canDoubleJump = true;
+          this.coyoteCounter = 0;
+          this.jumpBuffer = 0;
+          this.facing = 1;
+          this.dead = false;
+          this.scaleX = 1;
+          this.scaleY = 1;
+          this.targetScaleX = 1;
+          this.targetScaleY = 1;
+          this.blinkTimer = 0;
+          this.isBlinking = false;
+          this.lookX = 0;
+          this.lookY = 0;
+          this.trail = [];
+          this.coreAngle = 0;
+          this.char = CHARACTERS[0];
+          this.coreColor = CHARACTERS[0].core;
+          this.trailColor = CHARACTERS[0].trail;
+        }
+        update(input, level) {
+          if (this.dead) return;
+
+          const gravityScale = level.gravityModifier || 1.0;
+          const effectiveGravity = this.baseGravity * gravityScale;
+
+          if (Math.abs(this.vx) > 1 || Math.abs(this.vy) > 1) {
+            this.trail.push({
+              x: this.x,
+              y: this.y,
+              alpha: 0.35,
+              scaleX: this.scaleX,
+              scaleY: this.scaleY,
+            });
+            if (this.trail.length > 5) this.trail.shift();
+          }
+          for (let t of this.trail) t.alpha -= 0.06;
+          this.trail = this.trail.filter((t) => t.alpha > 0);
+
+          this.scaleX += (this.targetScaleX - this.scaleX) * 0.2;
+          this.scaleY += (this.targetScaleY - this.scaleY) * 0.2;
+          this.targetScaleX = 1;
+          this.targetScaleY = 1;
+
+          this.coreAngle += 0.08;
+          this.blinkTimer++;
+          if (this.blinkTimer > 150 && Math.random() < 0.04) {
+            this.isBlinking = true;
+            if (this.blinkTimer > 165) {
+              this.isBlinking = false;
+              this.blinkTimer = 0;
+            }
+          }
+
+          if (this.isGrounded) {
+            this.coyoteCounter = 6;
+            this.canDoubleJump = true;
+          } else {
+            if (this.coyoteCounter > 0) this.coyoteCounter--;
+          }
+
+          let moveDir = 0;
+          if (input.left) {
+            moveDir -= 1;
+            this.facing = -1;
+          }
+          if (input.right) {
+            moveDir += 1;
+            this.facing = 1;
+          }
+
+          if (moveDir !== 0) {
+            this.vx += moveDir * this.accel;
+            this.vx = Math.max(
+              -this.maxSpeed,
+              Math.min(this.maxSpeed, this.vx),
+            );
+            this.lookX += (moveDir * 3 - this.lookX) * 0.25;
+          } else {
+            this.vx *= this.isGrounded ? this.friction : this.airFriction;
+            if (Math.abs(this.vx) < 0.05) this.vx = 0;
+            this.lookX += (0 - this.lookX) * 0.2;
+          }
+
+          // وقتی در حال سقوط است، جاذبه را بیشتر می‌کنیم تا زمان آویزان ماندن در هوا حذف شود
+          // Symmetric gravity keeps ascent and descent under the same acceleration.
+          this.vy += effectiveGravity;
+          if (this.vy > 0) this.vy = Math.min(this.vy, this.maxFall);
+
+        // Wall Slide (پاسخ‌گو: بدون نیاز به فشار داخل دیوار، کافی است به دیوار چسبیده باشد)
+        if (this.wallJumpLock > 0) this.wallJumpLock--;
+        const wallSide = this.wallContact !== 0 ? this.wallContact : this.onWall;
+        if (wallSide !== 0 && !this.isGrounded && this.vy > 0) {
+          this.isWallSliding = true;
+          this.onWall = wallSide;
+          this.wallSlideSpeed = Math.min(this.wallSlideSpeed + 0.08, 4.5);
+          this.vy = Math.min(this.vy, this.wallSlideSpeed);
+          if (Math.random() < 0.15 && typeof audio !== 'undefined' && audio.wallSlide) audio.wallSlide();
+          if (typeof particles !== 'undefined' && particles.emit) {
+            particles.emit(this.x + (this.onWall === 1 ? this.w : 0), this.y + this.h * 0.7, 2, "#00e5ff", 1.2, 0.04);
+          }
+        } else {
+          this.isWallSliding = false;
+          this.wallSlideSpeed = 3.2;
+        }
+
+          this.vy = Math.min(this.vy, this.maxFall);
+          this.lookY +=
+            ((this.vy > 1 ? 2 : this.vy < -1 ? -2 : 0) - this.lookY) * 0.2;
+
+          if (input.jumpPressed) this.jumpBuffer = 7;
+          if (this.jumpBuffer > 0) this.jumpBuffer--;
+
+          if (this.jumpBuffer > 0) {
+            if (this.isGrounded || this.coyoteCounter > 0) {
+              this.vy = -this.jumpForce * (gravityScale < 0.8 ? 0.85 : 1.0);
+              this.jumpBuffer = 0;
+              this.coyoteCounter = 0;
+              this.isGrounded = false;
+              this.targetScaleX = 0.7;
+              this.targetScaleY = 1.35;
+              audio.jump();
+              ps.emit(
+                this.x + this.w / 2,
+                this.y + this.h,
+                8,
+                this.coreColor || "#00f3ff",
+                3,
+                0.04,
+                3,
+              );
+            } else if (this.isWallSliding || (this.wallContact !== 0 && this.wallJumpLock === 0)) {
+              const wSide = this.isWallSliding ? this.onWall : this.wallContact;
+              this.vy = -this.jumpForce * 1.0;
+              this.vx = -wSide * (this.maxSpeed * 1.25);
+              this.facing = -wSide;
+              this.jumpBuffer = 0;
+              this.wallJumpLock = 10; // تا جدا شدن از دیوار، پرش دیواری تکرار نشود
+              this.canDoubleJump = true; // بعد از پرش دیواری دوباره پرش دوگانه فعال شود
+              this.isWallSliding = false;
+              this.targetScaleX = 0.75;
+              this.targetScaleY = 1.3;
+              audio.jump();
+              ps.emit(
+                wSide === -1 ? this.x : this.x + this.w,
+                this.y + this.h / 2,
+                10,
+                "#ff0055",
+                4,
+                0.04,
+                3,
+              );
+            } else if (this.canDoubleJump) {
+              this.vy =
+                -this.doubleJumpForce * (gravityScale < 0.8 ? 0.85 : 1.0);
+              this.canDoubleJump = false;
+              this.jumpBuffer = 0;
+              this.targetScaleX = 1.35;
+              this.targetScaleY = 0.7;
+              audio.doubleJump();
+              ps.emit(
+                this.x + this.w / 2,
+                this.y + this.h,
+                12,
+                "#9d00ff",
+                4,
+                0.04,
+                4,
+              );
+            }
+          }
+
+          this.resolveCollisions(level);
+        }
+        resolveCollisions(level) {
+          // اگر در حال سقوط هستیم اول حرکت عمودی انجام شود تا لبه‌ها به‌عنوان دیوار تشخیص داده نشوند
+          const movingDown = this.vy > 0;
+          if (movingDown) {
+            this.y += this.vy;
+            this.vy = 0;
+          }
+
+          this.x += this.vx;
+          // تماس دیواری پایدار: در طول کل برخورد (حتی هنگام سقوط) حفظ می‌شود
+          this.wallContact = 0;
+          this.onWall = 0;
+
+          for (const p of level.platforms) {
+            if (p.isBroken) continue;
+            if (this.checkAABB(this, p)) {
+              // هم‌پوشانی عمودی عمیق لازم است تا فرود روی لبه، برخورد جانبی حساب نشود
+              const yOverlap =
+                this.y + this.h > p.y + 5 && this.y < p.y + p.h - 5;
+              if (!yOverlap) continue;
+              if (this.vx > 0) {
+                this.x = p.x - this.w;
+                this.onWall = 1;
+                this.wallContact = 1;
+              } else if (this.vx < 0) {
+                this.x = p.x + p.w;
+                this.onWall = -1;
+                this.wallContact = -1;
+              }
+              this.vx = 0;
+            }
+          }
+
+          if (movingDown) {
+            // بخش عمودی سقوط قبلاً انجام شده؛ فقط برخورد را بررسی کن
+            let landed = false;
+            let wasGroundedLocal = this.isGrounded;
+            this.isGrounded = false;
+            for (const p of level.platforms) {
+              if (p.isBroken) continue;
+              if (this.checkAABB(this, p) && this.y + this.h > p.y) {
+                this.y = p.y - this.h;
+                this.isGrounded = true;
+                landed = true;
+                if (p.vx) this.x += p.vx;
+                if (p.vy) this.y += p.vy;
+                if (p.crumble && !p.stepped) {
+                  p.stepped = true;
+                  p.crumbleTimer = 35;
+                }
+                if (!wasGroundedLocal) {
+                  this.targetScaleX = 1.35;
+                  this.targetScaleY = 0.7;
+                  ps.emit(
+                    this.x + this.w / 2,
+                    this.y + this.h,
+                    6,
+                    this.coreColor || "#00f3ff",
+                    2,
+                    0.05,
+                    2.5,
+                  );
+                }
+              }
+            }
+            // تماس دیواری حفظ می‌شود (wallContact) تا پرش دیواری هنگام سقوط کار کند؛
+            // فقط onWall پاک می‌شود تا بازیکن به دیوار نچسبد و انیمیشن تمیز بماند
+            this.onWall = this.wallContact;
+          } else {
+            this.y += this.vy;
+            let wasGrounded = this.isGrounded;
+            this.isGrounded = false;
+
+            for (const p of level.platforms) {
+              if (p.isBroken) continue;
+              if (this.checkAABB(this, p)) {
+                if (this.vy > 0) {
+                  this.y = p.y - this.h;
+                  this.vy = 0;
+                  this.isGrounded = true;
+
+                  // حمل ربات توسط سکوی متحرک
+                  if (p.vx) this.x += p.vx;
+                  if (p.vy) this.y += p.vy;
+
+                  // تخریب سکوهای شکننده موقت
+                  if (p.crumble && !p.stepped) {
+                    p.stepped = true;
+                    p.crumbleTimer = 35; // بعد از ۳۵ فریم فرو می‌ریزد
+                  }
+
+                  if (!wasGrounded) {
+                    this.targetScaleX = 1.35;
+                    this.targetScaleY = 0.7;
+                    ps.emit(
+                      this.x + this.w / 2,
+                      this.y + this.h,
+                      6,
+                      this.coreColor || "#00f3ff",
+                      2,
+                      0.05,
+                      2.5,
+                    );
+                  }
+                } else if (this.vy < 0) {
+                  this.y = p.y + p.h;
+                  this.vy = 0;
+                }
+              }
+            }
+          }
+        }
+        checkAABB(r1, r2) {
+          return (
+            r1.x < r2.x + r2.w &&
+            r1.x + r1.w > r2.x &&
+            r1.y < r2.y + r2.h &&
+            r1.y + r1.h > r2.y
+          );
+        }
+        draw(ctx) {
+          if (this.dead) return;
+          for (let t of this.trail) {
+            ctx.save();
+            ctx.globalAlpha = t.alpha;
+            ctx.translate(t.x + this.w / 2, t.y + this.h / 2);
+            ctx.scale(t.scaleX, t.scaleY);
+            ctx.fillStyle = this.trailColor || "#00f3ff";
+            ctx.shadowColor = this.trailColor || "#00f3ff";
+            ctx.shadowBlur = 10;
+            this.drawRoundedRect(
+              ctx,
+              -this.w / 2,
+              -this.h / 2,
+              this.w,
+              this.h,
+              6,
+            );
+            ctx.fill();
+            ctx.restore();
+          }
+
+          ctx.save();
+          const cx = this.x + this.w / 2;
+          const cy = this.y + this.h / 2;
+          ctx.translate(cx, cy);
+          ctx.scale(this.scaleX, this.scaleY);
+          if (this.isWallSliding) {
+            // خمیدگی کم به سمت دیوار هنگام سرخوردن
+            this.leanTilt = (this.leanTilt || 0) + (this.onWall * 0.28 - (this.leanTilt || 0)) * 0.3;
+            ctx.rotate(this.leanTilt);
+          } else {
+            this.leanTilt = (this.leanTilt || 0) * 0.8;
+            if (this.onWall !== 0) {
+              ctx.rotate(this.onWall * 0.12 + this.leanTilt);
+            } else if (!this.isGrounded) {
+              ctx.rotate(this.vx * 0.03);
+            }
+          }
+
+          const bodyCol = this.coreColor || "#00f3ff";
+          ctx.shadowColor = bodyCol;
+          ctx.shadowBlur = 16;
+          const cubeGrad = ctx.createLinearGradient(
+            -this.w / 2,
+            -this.h / 2,
+            this.w / 2,
+            this.h / 2,
+          );
+          cubeGrad.addColorStop(0, "#101a38");
+          cubeGrad.addColorStop(1, "#050a18");
+          ctx.fillStyle = cubeGrad;
+          this.drawRoundedRect(
+            ctx,
+            -this.w / 2,
+            -this.h / 2,
+            this.w,
+            this.h,
+            7,
+          );
+          ctx.fill();
+          ctx.lineWidth = 2.2;
+          ctx.strokeStyle = bodyCol;
+          ctx.stroke();
+
+          ctx.save();
+          ctx.rotate(this.coreAngle);
+          ctx.strokeStyle = "rgba(157, 0, 255, 0.7)";
+          ctx.lineWidth = 1.5;
+          ctx.strokeRect(-4, -4, 8, 8);
+          ctx.restore();
+
+          ctx.shadowBlur = 10;
+          ctx.shadowColor = "#fff";
+          ctx.fillStyle = "#ffffff";
+          const eyeW = 4.2;
+          const eyeH = this.isBlinking ? 1 : 5.8;
+          [-4.5, 4.5].forEach((offset) => {
+            const eyeX = offset + this.lookX;
+            const eyeY = -2.5 + this.lookY;
+            this.drawRoundedRect(
+              ctx,
+              eyeX - eyeW / 2,
+              eyeY - eyeH / 2,
+              eyeW,
+              eyeH,
+              1.8,
+            );
+            ctx.fill();
+          });
+
+          ctx.fillStyle = "#ff0055";
+          ctx.shadowColor = "#ff0055";
+          ctx.shadowBlur = 6;
+          ctx.fillRect(-this.w / 2 - 1.5, -3, 2, 6);
+          ctx.fillRect(this.w / 2 - 0.5, -3, 2, 6);
+          ctx.restore();
+        }
+        drawRoundedRect(ctx, x, y, w, h, r) {
+          ctx.beginPath();
+          ctx.moveTo(x + r, y);
+          ctx.lineTo(x + w - r, y);
+          ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+          ctx.lineTo(x + w, y + h - r);
+          ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+          ctx.lineTo(x + r, y + h);
+          ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+          ctx.lineTo(x, y + r);
+          ctx.quadraticCurveTo(x, y, x + r, y);
+          ctx.closePath();
+        }
+      }
+      /* ========================================================
+      5. معماری ۳۰ مرحله متنوع با نقشه‌های وسیع و مکانیک‌های خاص
+      ======================================================== */
+      const STAGES = [
+        // بخش ۱: مقدمات و پرش‌های دقیق
+        {
+          name: "سکتور ۰۱: راهروی ورودی",
+          worldW: 1400,
+          worldH: 600,
+          gravityModifier: 1.0,
+          spawn: { x: 80, y: 480 },
+          platforms: [
+            { x: 0, y: 540, w: 500, h: 60 },
+            { x: 580, y: 540, w: 820, h: 60 },
+            { x: 260, y: 440, w: 100, h: 18 },
+            { x: 420, y: 370, w: 90, h: 18 },
+            { x: 680, y: 440, w: 110, h: 18 },
+            { x: 860, y: 360, w: 120, h: 18 },
+            { x: 1060, y: 280, w: 160, h: 20 },
+          ],
+          hazards: [
+            { type: "spikes", x: 500, y: 540, w: 80, h: 16 },
+            { type: "spikes", x: 740, y: 524, w: 100, h: 16 },
+          ],
+          boosters: [],
+          fragments: [
+            { x: 290, y: 390 },
+            { x: 710, y: 390 },
+            { x: 910, y: 300 },
+            { x: 1120, y: 220 },
+          ],
+          gate: { x: 1180, y: 220, w: 36, h: 60 },
+        },
+        {
+          name: "سکتور ۰۲: پلتفرم‌های شناور",
+          worldW: 1600,
+          worldH: 650,
+          gravityModifier: 1.0,
+          spawn: { x: 60, y: 520 },
+          platforms: [
+            { x: 0, y: 580, w: 320, h: 70 },
+            {
+              x: 400,
+              y: 500,
+              w: 100,
+              h: 18,
+              moveX: true,
+              minX: 380,
+              maxX: 620,
+              speed: 2,
+            },
+            { x: 740, y: 430, w: 110, h: 18 },
+            {
+              x: 930,
+              y: 380,
+              w: 100,
+              h: 18,
+              moveX: true,
+              minX: 900,
+              maxX: 1150,
+              speed: 2.5,
+            },
+            { x: 1260, y: 310, w: 340, h: 340 },
+          ],
+          hazards: [
+            { type: "spikes", x: 320, y: 630, w: 940, h: 20 },
+            {
+              type: "laserBar",
+              x: 780,
+              y: 260,
+              w: 16,
+              h: 160,
+              pulse: true,
+              interval: 90,
+            },
+          ],
+          boosters: [],
+          fragments: [
+            { x: 450, y: 440 },
+            { x: 790, y: 370 },
+            { x: 1000, y: 310 },
+            { x: 1350, y: 250 },
+          ],
+          gate: { x: 1460, y: 250, w: 36, h: 60 },
+        },
+        {
+          name: "سکتور ۰۳: برج عمودی بالا‌رونده",
+          worldW: 960,
+          worldH: 1300,
+          gravityModifier: 1.0,
+          spawn: { x: 120, y: 1200 },
+          platforms: [
+            { x: 0, y: 1260, w: 960, h: 40 },
+            { x: 200, y: 1120, w: 140, h: 18 },
+            { x: 580, y: 1010, w: 140, h: 18 },
+            { x: 220, y: 890, w: 130, h: 18 },
+            { x: 560, y: 760, w: 140, h: 18 },
+            { x: 240, y: 620, w: 130, h: 18 },
+            { x: 580, y: 480, w: 130, h: 18 },
+            { x: 380, y: 340, w: 200, h: 20 },
+          ],
+          hazards: [
+            { type: "saw", cx: 480, cy: 950, r: 24, orbit: 80, speed: 0.03 },
+            { type: "saw", cx: 480, cy: 550, r: 24, orbit: 80, speed: -0.035 },
+          ],
+          boosters: [{ x: 260, y: 1106, w: 32, h: 14, power: 34 }],
+          fragments: [
+            { x: 640, y: 960 },
+            { x: 270, y: 840 },
+            { x: 630, y: 430 },
+            { x: 470, y: 280 },
+          ],
+          gate: { x: 460, y: 280, w: 36, h: 60 },
+        },
+        {
+          name: "سکتور ۰۴: سکوهای شکننده موقت",
+          worldW: 1700,
+          worldH: 600,
+          gravityModifier: 1.0,
+          spawn: { x: 70, y: 480 },
+          platforms: [
+            { x: 0, y: 540, w: 260, h: 60 },
+            { x: 340, y: 480, w: 90, h: 16, crumble: true },
+            { x: 520, y: 420, w: 90, h: 16, crumble: true },
+            { x: 700, y: 360, w: 90, h: 16, crumble: true },
+            { x: 880, y: 420, w: 90, h: 16, crumble: true },
+            { x: 1060, y: 470, w: 90, h: 16, crumble: true },
+            { x: 1260, y: 500, w: 440, h: 100 },
+          ],
+          hazards: [{ type: "spikes", x: 260, y: 580, w: 1000, h: 20 }],
+          boosters: [],
+          fragments: [
+            { x: 380, y: 420 },
+            { x: 740, y: 300 },
+            { x: 1100, y: 410 },
+            { x: 1390, y: 440 },
+          ],
+          gate: { x: 1540, y: 440, w: 36, h: 60 },
+        },
+        {
+          name: "سکتور ۰۵: گرانش رقیق ماهواره‌ای",
+          worldW: 1600,
+          worldH: 700,
+          gravityModifier: 0.8, // گرانش پایین با جهش‌های معلق
+          spawn: { x: 80, y: 580 },
+          platforms: [
+            { x: 0, y: 640, w: 350, h: 60 },
+            { x: 480, y: 510, w: 100, h: 18 },
+            { x: 780, y: 390, w: 100, h: 18 },
+            { x: 1080, y: 280, w: 110, h: 18 },
+            { x: 1340, y: 220, w: 260, h: 480 },
+          ],
+          hazards: [
+            { type: "saw", cx: 630, cy: 440, r: 28, orbit: 70, speed: 0.02 },
+            { type: "saw", cx: 930, cy: 320, r: 28, orbit: 70, speed: -0.02 },
+          ],
+          boosters: [],
+          fragments: [
+            { x: 530, y: 450 },
+            { x: 830, y: 330 },
+            { x: 1130, y: 220 },
+          ],
+          gate: { x: 1440, y: 160, w: 36, h: 60 },
+        },
+
+        // بخش ۲: مکانیک‌های پرتابگر، تله‌های لیزری و مسیرهای طولانی (۶ تا ۱۵)
+        {
+          name: "سکتور ۰۶: سکوهای ترامپولین نئونی",
+          worldW: 1800,
+          worldH: 700,
+          gravityModifier: 1.05,
+          spawn: { x: 80, y: 600 },
+          platforms: [
+            { x: 0, y: 650, w: 280, h: 50 },
+            { x: 380, y: 650, w: 120, h: 50 },
+            { x: 620, y: 400, w: 160, h: 20 },
+            { x: 920, y: 650, w: 120, h: 50 },
+            { x: 1160, y: 350, w: 160, h: 20 },
+            { x: 1480, y: 450, w: 320, h: 250 },
+          ],
+          hazards: [{ type: "spikes", x: 280, y: 680, w: 1200, h: 20 }],
+          boosters: [
+            { x: 420, y: 636, w: 40, h: 14, power: 24 },
+            { x: 960, y: 636, w: 40, h: 14, power: 25 },
+          ],
+          fragments: [
+            { x: 690, y: 330 },
+            { x: 970, y: 240 },
+            { x: 1230, y: 280 },
+            { x: 1560, y: 380 },
+          ],
+          gate: { x: 1660, y: 390, w: 36, h: 60 },
+        },
+        {
+          name: "سکتور ۰۷: شبکه لیزرهای پالسی",
+          worldW: 1700,
+          worldH: 600,
+          gravityModifier: 1.0,
+          spawn: { x: 70, y: 480 },
+          platforms: [
+            { x: 0, y: 540, w: 300, h: 60 },
+            { x: 380, y: 540, w: 200, h: 60 },
+            { x: 680, y: 540, w: 200, h: 60 },
+            { x: 980, y: 540, w: 200, h: 60 },
+            { x: 1280, y: 480, w: 420, h: 120 },
+          ],
+          hazards: [
+            {
+              type: "laserBar",
+              x: 330,
+              y: 360,
+              w: 14,
+              h: 180,
+              pulse: true,
+              interval: 60,
+            },
+            {
+              type: "laserBar",
+              x: 620,
+              y: 360,
+              w: 14,
+              h: 180,
+              pulse: true,
+              interval: 70,
+            },
+            {
+              type: "laserBar",
+              x: 920,
+              y: 360,
+              w: 14,
+              h: 180,
+              pulse: true,
+              interval: 80,
+            },
+          ],
+          boosters: [],
+          fragments: [
+            { x: 470, y: 470 },
+            { x: 770, y: 470 },
+            { x: 1070, y: 470 },
+            { x: 1400, y: 410 },
+          ],
+          gate: { x: 1540, y: 420, w: 36, h: 60 },
+        },
+        {
+          name: "سکتور ۰۸: آسانسورهای پرسرعت",
+          worldW: 1800,
+          worldH: 800,
+          gravityModifier: 1.0,
+          spawn: { x: 80, y: 700 },
+          platforms: [
+            { x: 0, y: 760, w: 260, h: 40 },
+            {
+              x: 360,
+              y: 680,
+              w: 110,
+              h: 18,
+              moveY: true,
+              minY: 320,
+              maxY: 720,
+              speed: 3,
+            },
+            { x: 600, y: 400, w: 160, h: 18 },
+            {
+              x: 880,
+              y: 580,
+              w: 110,
+              h: 18,
+              moveY: true,
+              minY: 260,
+              maxY: 650,
+              speed: -3.5,
+            },
+            { x: 1120, y: 340, w: 180, h: 18 },
+            { x: 1420, y: 520, w: 380, h: 280 },
+          ],
+          hazards: [{ type: "spikes", x: 260, y: 780, w: 1160, h: 20 }],
+          boosters: [],
+          fragments: [
+            { x: 410, y: 260 },
+            { x: 670, y: 330 },
+            { x: 930, y: 210 },
+            { x: 1200, y: 270 },
+          ],
+          gate: { x: 1560, y: 460, w: 36, h: 60 },
+        },
+        {
+          name: "سکتور ۰۹: دالان دندانه‌دار",
+          worldW: 1900,
+          worldH: 600,
+          gravityModifier: 1.0,
+          spawn: { x: 60, y: 480 },
+          platforms: [
+            { x: 0, y: 540, w: 240, h: 60 },
+            { x: 320, y: 470, w: 80, h: 18 },
+            { x: 480, y: 400, w: 80, h: 18 },
+            { x: 640, y: 330, w: 80, h: 18 },
+            { x: 820, y: 420, w: 90, h: 18 },
+            { x: 1010, y: 490, w: 80, h: 18 },
+            { x: 1180, y: 420, w: 90, h: 18 },
+            { x: 1370, y: 350, w: 80, h: 18 },
+            { x: 1550, y: 420, w: 350, h: 180 },
+          ],
+          hazards: [
+            { type: "spikes", x: 240, y: 580, w: 1310, h: 20 },
+            { type: "saw", cx: 520, cy: 260, r: 22, orbit: 45, speed: 0.04 },
+            { type: "saw", cx: 1220, cy: 280, r: 22, orbit: 45, speed: -0.04 },
+          ],
+          boosters: [],
+          fragments: [
+            { x: 520, y: 340 },
+            { x: 860, y: 360 },
+            { x: 1220, y: 360 },
+            { x: 1650, y: 350 },
+          ],
+          gate: { x: 1720, y: 360, w: 36, h: 60 },
+        },
+        {
+          name: "سکتور ۱۰: دره مرگبار و پرش‌های میلی‌متری",
+          worldW: 2000,
+          worldH: 650,
+          gravityModifier: 1.0,
+          spawn: { x: 60, y: 520 },
+          platforms: [
+            { x: 0, y: 580, w: 220, h: 70 },
+            { x: 320, y: 510, w: 50, h: 16 },
+            { x: 480, y: 440, w: 50, h: 16 },
+            { x: 660, y: 370, w: 50, h: 16 },
+            { x: 860, y: 330, w: 60, h: 16 },
+            { x: 1080, y: 390, w: 50, h: 16 },
+            { x: 1280, y: 450, w: 50, h: 16 },
+            { x: 1480, y: 510, w: 60, h: 16 },
+            { x: 1660, y: 540, w: 340, h: 110 },
+          ],
+          hazards: [
+            { type: "spikes", x: 220, y: 630, w: 1440, h: 20 },
+            {
+              type: "laserBar",
+              x: 760,
+              y: 180,
+              w: 16,
+              h: 220,
+              pulse: true,
+              interval: 65,
+            },
+          ],
+          boosters: [],
+          fragments: [
+            { x: 500, y: 380 },
+            { x: 890, y: 270 },
+            { x: 1300, y: 390 },
+            { x: 1750, y: 470 },
+          ],
+          gate: { x: 1820, y: 480, w: 36, h: 60 },
+        },
+      ];
+
+      // ساخت خودکار و پارامتریک مراحل ۱۱ تا ۳۰ با الگوها و مکانیک‌های منحصربه‌فرد
+      const ARCHETYPES = [
+        { name: "آزمایشگاه لیزر شدید", g: 1.0, type: "laser" },
+        { name: "آشیانه اره‌های رونده", g: 1.0, type: "saws" },
+        { name: "سکتور گرانش سنگین", g: 1.25, type: "heavy" },
+        { name: "میدان رانش و جهش", g: 0.9, type: "booster" },
+        { name: "برج معلق متحرک", g: 0.85, type: "floating" },
+      ];
+
+      for (let i = 11; i <= 30; i++) {
+        const arch = ARCHETYPES[(i - 11) % ARCHETYPES.length];
+        const mapW = 1600 + (i % 5) * 160;
+        const mapH = 650 + (i % 3) * 120;
+        const stageData = {
+          name: `سکتور ${i < 10 ? "۰" + i : i}: ${arch.name}`,
+          worldW: mapW,
+          worldH: mapH,
+          gravityModifier: arch.g,
+          spawn: { x: 80, y: mapH - 120 },
+          platforms: [
+            { x: 0, y: mapH - 60, w: 260, h: 60 },
+            { x: mapW - 280, y: mapH - 140, w: 280, h: 140 },
+          ],
+          hazards: [
+            { type: "spikes", x: 260, y: mapH - 30, w: mapW - 540, h: 30 },
+          ],
+          boosters: [],
+          fragments: [],
+          gate: { x: mapW - 140, y: mapH - 200, w: 36, h: 60 },
+        };
+
+        const steps = 6 + (i % 4);
+        const stepX = (mapW - 600) / steps;
+        for (let s = 1; s <= steps; s++) {
+          const px = 240 + s * stepX;
+          const py = mapH - 120 - ((s * 55) % (mapH - 260));
+          const isMoving = s % 2 === 0;
+          const isCrumble = s % 3 === 0;
+
+          stageData.platforms.push({
+            x: px,
+            y: py,
+            w: 80 + (s % 3) * 15,
+            h: 18,
+            moveX: isMoving,
+            minX: px - 40,
+            maxX: px + 60,
+            speed: (s % 2 === 0 ? 1 : -1) * (1.8 + (i % 3) * 0.4),
+            crumble: isCrumble,
+          });
+
+          if (s % 2 === 1) {
+            stageData.fragments.push({ x: px + 40, y: py - 50 });
+          }
+
+          if (arch.type === "laser" && s % 2 === 0) {
+            stageData.hazards.push({
+              type: "laserBar",
+              x: px + 35,
+              y: py - 120,
+              w: 12,
+              h: 120,
+              pulse: true,
+              interval: 50 + s * 10,
+            });
+          } else if (arch.type === "saws" && s % 3 === 1) {
+            stageData.hazards.push({
+              type: "saw",
+              cx: px + 40,
+              cy: py - 70,
+              r: 22,
+              orbit: 40 + (i % 20),
+              speed: s % 2 === 0 ? 0.03 : -0.03,
+            });
+          }
+        }
+
+        if (arch.type === "booster") {
+          stageData.boosters.push(
+            { x: 380, y: mapH - 74, w: 36, h: 14, power: 24 },
+            { x: mapW / 2, y: mapH - 74, w: 36, h: 14, power: 25 },
+          );
+        }
+
+        stageData.fragments.push({ x: mapW - 200, y: mapH - 190 });
+        STAGES.push(stageData);
+      }
+
+      /* ========================================================
+      5.5 کاراکترهای قابل انتخاب (۲۴ اسکین نئونی) و پیشرفت مراحل
+      ======================================================== */
+      const CHARACTERS = [
+        {
+          name: "پیکسل",
+          core: "#00f3ff",
+          trail: "#00f3ff",
+          shape: "rounded",
+          face: "dot",
+        },
+        {
+          name: "بریز",
+          core: "#ff0055",
+          trail: "#ff0055",
+          shape: "rounded",
+          face: "visor",
+        },
+        {
+          name: "کوانتوم",
+          core: "#9d00ff",
+          trail: "#9d00ff",
+          shape: "diamond",
+          face: "dot",
+        },
+        {
+          name: "نئون‌گربه",
+          core: "#ffaa00",
+          trail: "#ffaa00",
+          shape: "rounded",
+          face: "cat",
+        },
+        {
+          name: "گلیچ",
+          core: "#00ff66",
+          trail: "#00ff66",
+          shape: "glitch",
+          face: "visor",
+        },
+        {
+          name: "ابرکره",
+          core: "#ff6600",
+          trail: "#ff6600",
+          shape: "circle",
+          face: "dot",
+        },
+        {
+          name: "شبح",
+          core: "#88ccff",
+          trail: "#88ccff",
+          shape: "rounded",
+          face: "ghost",
+        },
+        {
+          name: "مگنات",
+          core: "#ffee00",
+          trail: "#ffee00",
+          shape: "hex",
+          face: "visor",
+        },
+        {
+          name: "پلاسما",
+          core: "#ff3399",
+          trail: "#ff3399",
+          shape: "circle",
+          face: "angry",
+        },
+        {
+          name: "آیسی",
+          core: "#66fff2",
+          trail: "#66fff2",
+          shape: "hex",
+          face: "sleepy",
+        },
+        {
+          name: "ولکان",
+          core: "#ff4400",
+          trail: "#ff4400",
+          shape: "diamond",
+          face: "angry",
+        },
+        {
+          name: "زتا",
+          core: "#aa22ff",
+          trail: "#aa22ff",
+          shape: "glitch",
+          face: "visor",
+        },
+        {
+          name: "مینیمال",
+          core: "#dddddd",
+          trail: "#dddddd",
+          shape: "square",
+          face: "dot",
+        },
+        {
+          name: "سایفر",
+          core: "#00ddaa",
+          trail: "#00ddaa",
+          shape: "hex",
+          face: "cat",
+        },
+        {
+          name: "ولت",
+          core: "#ffff33",
+          trail: "#ffff33",
+          shape: "rounded",
+          face: "angry",
+        },
+        {
+          name: "رز",
+          core: "#ff77aa",
+          trail: "#ff77aa",
+          shape: "circle",
+          face: "happy",
+        },
+        {
+          name: "تایتان",
+          core: "#5577ff",
+          trail: "#5577ff",
+          shape: "square",
+          face: "visor",
+        },
+        {
+          name: "پیکسی",
+          core: "#ff66ff",
+          trail: "#ff66ff",
+          shape: "diamond",
+          face: "happy",
+        },
+        {
+          name: "سایه",
+          core: "#444466",
+          trail: "#666699",
+          shape: "rounded",
+          face: "ghost",
+        },
+        {
+          name: "پروتون",
+          core: "#00ff44",
+          trail: "#00ff44",
+          shape: "square",
+          face: "happy",
+        },
+        {
+          name: "لاوا",
+          core: "#ff2200",
+          trail: "#ff8800",
+          shape: "circle",
+          face: "angry",
+        },
+        {
+          name: "یخی",
+          core: "#aaffff",
+          trail: "#ccffff",
+          shape: "diamond",
+          face: "sleepy",
+        },
+        {
+          name: "روبوکس",
+          core: "#7788ff",
+          trail: "#99aaff",
+          shape: "hex",
+          face: "dot",
+        },
+        {
+          name: "ستاره",
+          core: "#ffdd00",
+          trail: "#ffee66",
+          shape: "star",
+          face: "happy",
+        },
+      ];
+
+      const COMPLETED_KEY = "corehopper_completed_stages";
+      const ProgressStore = {
+        get() {
+          try {
+            return JSON.parse(localStorage.getItem(COMPLETED_KEY) || "[]");
+          } catch (err) {
+            return [];
+          }
+        },
+        markComplete(idx) {
+          const arr = this.get();
+          if (!arr.includes(idx)) {
+            arr.push(idx);
+            try {
+              localStorage.setItem(COMPLETED_KEY, JSON.stringify(arr));
+            } catch (err) {}
+          }
+        },
+      };
+
+      // رسم پیش‌نمایش کوچک کاراکتر روی بوم‌های کوچک منوی انتخاب
+      function drawCharPreview(canvas, ch) {
+        const c = canvas.getContext("2d");
+        const size = canvas.width;
+        c.clearRect(0, 0, size, size);
+        c.save();
+        c.translate(size / 2, size / 2);
+        c.shadowColor = ch.core;
+        c.shadowBlur = 7;
+        c.strokeStyle = ch.core;
+        c.fillStyle = "#0a0f1e";
+        c.lineWidth = 2;
+        const half = size * 0.32;
+        c.beginPath();
+        if (ch.shape === "circle") {
+          c.arc(0, 0, half, 0, Math.PI * 2);
+        } else if (ch.shape === "diamond") {
+          c.moveTo(0, -half);
+          c.lineTo(half, 0);
+          c.lineTo(0, half);
+          c.lineTo(-half, 0);
+          c.closePath();
+        } else if (ch.shape === "hex") {
+          for (let i = 0; i < 6; i++) {
+            const a = (Math.PI / 3) * i - Math.PI / 6;
+            c.lineTo(Math.cos(a) * half, Math.sin(a) * half);
+          }
+          c.closePath();
+        } else if (ch.shape === "star") {
+          for (let i = 0; i < 10; i++) {
+            const a = (Math.PI / 5) * i - Math.PI / 2;
+            const rr = i % 2 === 0 ? half : half * 0.5;
+            c.lineTo(Math.cos(a) * rr, Math.sin(a) * rr);
+          }
+          c.closePath();
+        } else if (ch.shape === "glitch") {
+          c.rect(-half, -half, half * 2, half * 0.9);
+          c.rect(-half * 0.7, -half * 0.1, half * 1.7, half * 1.1);
+        } else {
+          // rounded / square
+          if (c.roundRect) {
+            c.roundRect(
+              -half,
+              -half,
+              half * 2,
+              half * 2,
+              ch.shape === "rounded" ? 5 : 1,
+            );
+          } else {
+            c.rect(-half, -half, half * 2, half * 2);
+          }
+        }
+        c.fill();
+        c.stroke();
+        // صورت
+        c.shadowBlur = 0;
+        c.fillStyle = ch.core;
+        const eyeY = -half * 0.2;
+        const ex = half * 0.35;
+        if (ch.face === "visor") {
+          c.fillRect(-ex * 1.6, eyeY - 1.5, ex * 3.2, 3);
+        } else if (ch.face === "ghost") {
+          c.beginPath();
+          c.arc(-ex, eyeY, 1.6, 0, 7);
+          c.arc(ex, eyeY, 1.6, 0, 7);
+          c.fill();
+        } else if (ch.face === "angry") {
+          c.fillRect(-ex - 1.5, eyeY - 2.5, 3, 3);
+          c.fillRect(ex - 1.5, eyeY - 2.5, 3, 3);
+        } else if (ch.face === "sleepy") {
+          c.fillRect(-ex - 2, eyeY, 4, 1.2);
+          c.fillRect(ex - 2, eyeY, 4, 1.2);
+        } else if (ch.face === "happy") {
+          c.beginPath();
+          c.arc(-ex, eyeY, 1.6, 0, 7);
+          c.arc(ex, eyeY, 1.6, 0, 7);
+          c.fill();
+          c.beginPath();
+          c.arc(0, eyeY + 3, 2.2, 0, Math.PI);
+          c.fill();
+        } else if (ch.face === "cat") {
+          c.beginPath();
+          c.moveTo(-ex - 3, eyeY - 2);
+          c.lineTo(-ex - 0.5, eyeY);
+          c.lineTo(-ex - 3, eyeY + 2);
+          c.fill();
+          c.beginPath();
+          c.moveTo(ex + 3, eyeY - 2);
+          c.lineTo(ex + 0.5, eyeY);
+          c.lineTo(ex + 3, eyeY + 2);
+          c.fill();
+        } else {
+          c.beginPath();
+          c.arc(-ex, eyeY, 1.6, 0, 7);
+          c.arc(ex, eyeY, 1.6, 0, 7);
+          c.fill();
+        }
+        c.restore();
+      }
+
+      /* ========================================================
+      6. موتور بازی، مقیاس‌پذیری واکنش‌گرا و حلقه رندر
+      ======================================================== */
+      class GameEngine {
+        constructor() {
+          this.canvas = document.getElementById("canvas");
+          this.ctx = this.canvas.getContext("2d");
+          this.container = document.getElementById("viewport-box");
+          this.stageIndex = 0;
+          this.currentStage = null;
+          this.player = null;
+          this.camera = new Camera(960, 540);
+          this.shakeTimer = 0;
+          this.shakeAmount = 0;
+          this.gameWon = false;
+          this.stageWinTimer = 0;
+          this.isPaused = false;
+          this.selectedChar = 0;
+          try {
+            this.selectedChar =
+              parseInt(localStorage.getItem("corehopper_char"), 10) || 0;
+          } catch (err) {
+            this.selectedChar = 0;
+          }
+
+          this.input = {
+            left: false,
+            right: false,
+            jump: false,
+            jumpPressed: false,
+          };
+
+          this.resizeCanvas = this.resizeCanvas.bind(this);
+          window.addEventListener("resize", this.resizeCanvas);
+
+          this.buildStageSelectUI();
+          this.initInput();
+          this.resizeCanvas();
+          this.loadStage(0);
+
+          this.loop = this.loop.bind(this);
+          requestAnimationFrame(this.loop);
+        }
+
+        // منطق اصلی ریسپانسیو و حفظ شارپ بودن بدون تاری رندر
+        resizeCanvas() {
+          const rect = this.container.getBoundingClientRect();
+          const dpr = window.devicePixelRatio || 1;
+          this.canvas.width = rect.width * dpr;
+          this.canvas.height = rect.height * dpr;
+          // Smaller viewports use a tighter world window, keeping the character prominent.
+          const viewportWidth = Math.max(320, rect.width);
+          this.camera.zoom = Math.max(1, Math.min(1.55, 1 + (960 - viewportWidth) / 960 * 0.7));
+          this.camera.viewW = 960 / this.camera.zoom;
+          this.camera.viewH = 540 / this.camera.zoom;
+        }
+
+        buildStageSelectUI() {
+          this.refreshStageSelect();
+          this.buildCharSelect(); // کاراکترها حالا در مودال جدا هستند
+          this.refreshStageNav();
+        }
+
+        refreshStageNav() {
+          const el = document.getElementById("ui-stages-current");
+          if (el)
+            el.textContent =
+              "سکتور " +
+              (this.stageIndex + 1 < 10 ? "۰" : "") +
+              (this.stageIndex + 1);
+        }
+
+        refreshStageSelect() {
+          const container = document.getElementById("stages-grid-container");
+          const done = ProgressStore.get();
+          container.innerHTML = "";
+          STAGES.forEach((stage, idx) => {
+            const card = document.createElement("div");
+            card.className = "stage-card";
+            card.textContent = idx + 1;
+            card.title = stage.name;
+            if (done.includes(idx)) card.classList.add("completed");
+            if (idx === this.stageIndex) card.classList.add("stage-current");
+            const stars = card.querySelector(".stage-stars");
+            if (stars) stars.textContent = done.includes(idx) ? "★ ★" : "";
+            card._idx = idx;
+            card.title = stage.name;
+            card.style.position = "relative";
+            card.innerHTML = `<span>${idx + 1}</span><span class="stage-stars">${done.includes(idx) ? "★ ★" : ""}</span>`;
+            card.addEventListener("click", () => this.selectStage(idx));
+            container.appendChild(card);
+          });
+          this.refreshStageNav();
+        }
+
+        buildCharSelect() {
+          const container = document.getElementById("chars-grid-container");
+          container.innerHTML = "";
+          CHARACTERS.forEach((ch, idx) => {
+            const card = document.createElement("div");
+            card.className = "char-card";
+            if (idx === this.selectedChar) card.classList.add("selected");
+            const cv = document.createElement("canvas");
+            cv.width = 26;
+            cv.height = 26;
+            drawCharPreview(cv, ch);
+            const nm = document.createElement("span");
+            nm.textContent = ch.name;
+            card.appendChild(cv);
+            card.appendChild(nm);
+            card.addEventListener("click", () => {
+              this.selectedChar = idx;
+              try {
+                localStorage.setItem("corehopper_char", String(idx));
+              } catch (err) {}
+              container
+                .querySelectorAll(".char-card")
+                .forEach((el) => el.classList.remove("selected"));
+              card.classList.add("selected");
+              this.applyCharacter(idx);
+            });
+            container.appendChild(card);
+          });
+          this.applyCharacter(this.selectedChar);
+        }
+
+        applyCharacter(idx) {
+          const ch = CHARACTERS[idx] || CHARACTERS[0];
+          this.selectedChar = CHARACTERS.indexOf(ch);
+          if (this.player) {
+            this.player.char = ch;
+            this.player.coreColor = ch.core;
+            this.player.trailColor = ch.trail;
+          }
+          const label = document.getElementById("ui-active-char");
+          if (label) label.textContent = ch.name;
+          const rlabel = document.getElementById("ready-char-name");
+          if (rlabel) rlabel.textContent = ch.name;
+        }
+
+        openCharacterSelect() {
+          this.buildCharSelect();
+          document.getElementById("stage-select-screen").style.display = "none";
+          document.getElementById("modal-character-select").style.display =
+            "flex";
+        }
+
+        selectStage(idx) {
+          if (idx < 0 || idx >= STAGES.length) return;
+          this.pendingStage = idx;
+          this.showReadyModal(idx);
+        }
+
+        showReadyModal(idx) {
+          this.pendingStage = idx;
+          document.getElementById("ready-stage-name").textContent =
+            STAGES[idx].name;
+          this.applyCharacter(this.selectedChar);
+          document.getElementById("modal-stage-ready").style.display = "flex";
+        }
+
+        confirmReady() {
+          document.getElementById("modal-stage-ready").style.display = "none";
+          const idx = this.pendingStage;
+          this.pendingStage = null;
+          if (idx == null) return;
+          this.loadStage(idx);
+          if (typeof this.startStage === "function") this.startStage();
+          document.getElementById("stage-select-screen").style.display = "none";
+          document.getElementById("modal-character-select").style.display =
+            "none";
+          this.isPaused = false;
+        }
+
+        openPauseMenu() {
+          if (this.gameWon || this.stageWinTimer > 0) return;
+          this.isPaused = true;
+          const prevBtn = document.getElementById("btn-pause-prev");
+          if (prevBtn) prevBtn.disabled = this.stageIndex === 0;
+          document.getElementById("pause-stage-no").textContent =
+            (this.stageIndex + 1 < 10 ? "۰" : "") + (this.stageIndex + 1);
+          document.getElementById("pause-stage-name").textContent =
+            "— " + this.currentStage.name;
+          document.getElementById("modal-pause").style.display = "flex";
+        }
+
+        closePauseMenu() {
+          this.isPaused = false;
+          document.getElementById("modal-pause").style.display = "none";
+        }
+
+        loadStage(index) {
+          this.stageIndex = index;
+          this.gameWon = false;
+          this.stageWinTimer = 0;
+          const src = STAGES[this.stageIndex];
+
+          this.currentStage = {
+            name: src.name,
+            worldW: src.worldW,
+            worldH: src.worldH,
+            gravityModifier: src.gravityModifier || 1.0,
+            platforms: src.platforms.map((p) => ({
+              ...p,
+              initialX: p.x,
+              initialY: p.y,
+              vx: 0,
+              vy: 0,
+              crumbleTimer: 0,
+              isBroken: false,
+              stepped: false,
+              respawnTimer: 0,
+              respawnTotal: 600,
+            })),
+            hazards: src.hazards.map((h) => ({
+              ...h,
+              currentAngle: 0,
+              pulseTimer: Math.floor(Math.random() * 60),
+            })),
+            boosters: (src.boosters || []).map((b) => ({ ...b })),
+            fragments: src.fragments.map((f) => ({
+              ...f,
+              r: 9,
+              collected: false,
+            })),
+            gate: { ...src.gate, isOpen: false },
+          };
+
+          if (!this.player) {
+            this.player = new CyberCube(src.spawn.x, src.spawn.y);
+            this.applyCharacter(this.selectedChar);
+          } else {
+            this.player.spawnX = src.spawn.x;
+            this.player.spawnY = src.spawn.y;
+            this.player.reset();
+          }
+
+          this.camera.x = this.player.x - this.camera.viewW / 2;
+          this.camera.y = this.player.y - this.camera.viewH / 2;
+          this.updateUI();
+        }
+
+        triggerShake(amount = 6, duration = 12) {
+          this.shakeAmount = amount;
+          this.shakeTimer = duration;
+        }
+
+        killPlayer() {
+          if (this.player.dead || this.stageWinTimer > 0) return;
+          this.player.dead = true;
+          this.triggerShake(9, 16);
+          audio.death();
+          ps.emit(
+            this.player.x + this.player.w / 2,
+            this.player.y + this.player.h / 2,
+            35,
+            "#ff0055",
+            6,
+            0.025,
+            4,
+          );
+
+          setTimeout(() => {
+            this.player.reset();
+            this.triggerShake(3, 6);
+          }, 380);
+        }
+
+        updateUI() {
+          document.getElementById("ui-stage").textContent =
+            `${this.stageIndex + 1 < 10 ? "0" : ""}${this.stageIndex + 1}`;
+          document.getElementById("ui-sector-name").textContent =
+            this.currentStage.name;
+          this.refreshStageSelect();
+          this.applyCharacter(this.selectedChar);
+        }
+
+        initInput() {
+          window.addEventListener("keydown", (e) => {
+            if (
+              [
+                "Space",
+                "ArrowUp",
+                "ArrowDown",
+                "ArrowLeft",
+                "ArrowRight",
+              ].includes(e.code)
+            ) {
+              e.preventDefault();
+            }
+            if (e.code === "ArrowLeft" || e.code === "KeyA")
+              this.input.left = true;
+            if (e.code === "ArrowRight" || e.code === "KeyD")
+              this.input.right = true;
+            if (
+              e.code === "Space" ||
+              e.code === "KeyW" ||
+              e.code === "ArrowUp"
+            ) {
+              if (!this.input.jump) this.input.jumpPressed = true;
+              this.input.jump = true;
+            }
+            if (e.code === "KeyR") this.loadStage(this.stageIndex);
+          });
+
+          window.addEventListener("keyup", (e) => {
+            if (e.code === "ArrowLeft" || e.code === "KeyA")
+              this.input.left = false;
+            if (e.code === "ArrowRight" || e.code === "KeyD")
+              this.input.right = false;
+            if (e.code === "Space" || e.code === "KeyW" || e.code === "ArrowUp")
+              this.input.jump = false;
+          });
+
+          const bindBtn = (id, key) => {
+            const el = document.getElementById(id);
+            const start = (e) => {
+              e.preventDefault();
+              this.input[key] = true;
+            };
+            const end = (e) => {
+              e.preventDefault();
+              this.input[key] = false;
+            };
+            el.addEventListener("touchstart", start, { passive: false });
+            el.addEventListener("touchend", end, { passive: false });
+            el.addEventListener("mousedown", start);
+            el.addEventListener("mouseup", end);
+            el.addEventListener("mouseleave", end);
+          };
+
+          bindBtn("m-left", "left");
+          bindBtn("m-right", "right");
+
+          const mJump = document.getElementById("m-jump");
+          const jumpStart = (e) => {
+            e.preventDefault();
+            this.input.jumpPressed = true;
+            this.input.jump = true;
+          };
+          const jumpEnd = (e) => {
+            e.preventDefault();
+            this.input.jump = false;
+          };
+          mJump.addEventListener("touchstart", jumpStart, { passive: false });
+          mJump.addEventListener("touchend", jumpEnd, { passive: false });
+          mJump.addEventListener("mousedown", jumpStart);
+          mJump.addEventListener("mouseup", jumpEnd);
+
+          document
+            .getElementById("btn-pause")
+            .addEventListener("click", () => this.openPauseMenu());
+          document
+            .getElementById("btn-pause-resume")
+            .addEventListener("click", () => this.closePauseMenu());
+          document
+            .getElementById("btn-pause-restart")
+            .addEventListener("click", () => {
+              this.closePauseMenu();
+              this.loadStage(this.stageIndex);
+            });
+          document
+            .getElementById("btn-pause-next")
+            .addEventListener("click", () => {
+              if (this.stageIndex < STAGES.length - 1) {
+                this.closePauseMenu();
+                this.selectStage(this.stageIndex + 1);
+              }
+            });
+          document
+            .getElementById("btn-pause-prev")
+            .addEventListener("click", () => {
+              if (this.stageIndex > 0) {
+                this.closePauseMenu();
+                this.selectStage(this.stageIndex - 1);
+              }
+            });
+          document
+            .getElementById("btn-pause-home")
+            .addEventListener("click", () => {
+              this.closePauseMenu();
+              this.refreshStageSelect();
+              document.getElementById("stage-select-screen").style.display =
+                "flex";
+            });
+          document
+            .getElementById("btn-pause-chars")
+            .addEventListener("click", () => {
+              this.closePauseMenu();
+              this.openCharacterSelect();
+            });
+          document
+            .getElementById("btn-char-header")
+            .addEventListener("click", () => this.openCharacterSelect());
+          document
+            .getElementById("btn-ready-start")
+            .addEventListener("click", () => this.confirmReady());
+          document
+            .getElementById("btn-ready-cancel")
+            .addEventListener("click", () => {
+              document.getElementById("modal-stage-ready").style.display =
+                "none";
+            });
+          document
+            .getElementById("btn-stages")
+            .addEventListener("click", () => {
+              this.refreshStageSelect();
+              document.getElementById("stage-select-screen").style.display =
+                "flex";
+            });
+          document
+            .getElementById("btn-close-stages")
+            .addEventListener("click", () => {
+              document.getElementById("stage-select-screen").style.display =
+                "none";
+            });
+
+          document
+            .getElementById("btn-stages-prev")
+            .addEventListener("click", () => {
+              if (this.stageIndex > 0) this.selectStage(this.stageIndex - 1);
+            });
+          document
+            .getElementById("btn-stages-next")
+            .addEventListener("click", () => {
+              if (this.stageIndex < STAGES.length - 1)
+                this.selectStage(this.stageIndex + 1);
+            });
+          document
+            .getElementById("btn-char-close")
+            .addEventListener("click", () => {
+              document.getElementById("modal-character-select").style.display =
+                "none";
+            });
+
+          const modal = document.getElementById("modal-help");
+          document
+            .getElementById("btn-help")
+            .addEventListener("click", () => (modal.style.display = "flex"));
+          document
+            .getElementById("btn-close-modal")
+            .addEventListener("click", () => (modal.style.display = "none"));
+
+          document
+            .getElementById("btn-audio")
+            .addEventListener("click", (e) => {
+              const enabled = audio.init();
+              e.target.textContent = enabled ? "صدا: روشن 🔊" : "صدا: خاموش 🔇";
+            });
+        }
+
+        update() {
+          if (this.isPaused || this.gameWon || this.stageWinTimer > 0) return;
+
+          // ۱. به‌روزرسانی سکوهای متحرک و شکننده
+          for (const p of this.currentStage.platforms) {
+            if (p.moveX) {
+              p.x += p.speed;
+              p.vx = p.speed;
+              if (p.x > p.maxX || p.x < p.minX) p.speed *= -1;
+            }
+            if (p.moveY) {
+              p.y += p.speed;
+              p.vy = p.speed;
+              if (p.y > p.maxY || p.y < p.minY) p.speed *= -1;
+            }
+            if (p.stepped && !p.isBroken) {
+              p.crumbleTimer--;
+              if (p.crumbleTimer <= 0) {
+                p.isBroken = true;
+                p.stepped = false;
+                p.respawnTimer = 600; // ۶۰۰ فریم = ۱۰ ثانیه تا بازسازی کامل
+                p.respawnTotal = 600;
+                ps.emit(
+                  p.x + p.w / 2,
+                  p.y + p.h / 2,
+                  14,
+                  "#ff0055",
+                  2.5,
+                  0.04,
+                  2,
+                );
+              }
+            } else if (p.isBroken) {
+              // شمارش معکوس بازسازی سکوی قرمز (۱۰ ثانیه)
+              p.respawnTimer--;
+              if (p.respawnTimer <= 0) {
+                p.isBroken = false;
+                p.stepped = false;
+                p.crumbleTimer = 35;
+                p.x = p.initialX;
+                p.y = p.initialY;
+                ps.emit(
+                  p.x + p.w / 2,
+                  p.y + p.h / 2,
+                  18,
+                  "#ff0055",
+                  3,
+                  0.03,
+                  2.5,
+                );
+              }
+            }
+          }
+
+          // ۲. به‌روزرسانی فیزیک پلیر
+          this.player.update(this.input, this.currentStage);
+          ps.update();
+
+          // ۳. به‌روزرسانی تله‌ها
+          for (const h of this.currentStage.hazards) {
+            if (h.type === "saw") {
+              h.currentAngle += h.speed;
+              h.curX = h.cx + Math.cos(h.currentAngle) * h.orbit;
+              h.curY = h.cy + Math.sin(h.currentAngle) * h.orbit;
+            } else if (h.type === "laserBar" && h.pulse) {
+              h.pulseTimer++;
+              h.isActive = h.pulseTimer % h.interval < h.interval * 0.55;
+            }
+          }
+
+          // ۴. تعامل پرتابگرها (Booster Pads)
+          for (const b of this.currentStage.boosters) {
+            if (this.player.checkAABB(this.player, b)) {
+              this.player.vy = -b.power * 1.35;
+              audio.launchPad();
+              ps.emit(b.x + b.w / 2, b.y, 16, "#00ff66", 4, 0.04, 3.5);
+            }
+          }
+
+          // ۵. بررسی مرگ، برخورد با خطرات و جمع‌آوری داده‌ها
+          if (!this.player.dead) {
+            if (this.player.y > this.currentStage.worldH + 100) {
+              this.killPlayer();
+              return;
+            }
+
+            for (const h of this.currentStage.hazards) {
+              if (h.type === "spikes") {
+                if (this.player.checkAABB(this.player, h)) {
+                  this.killPlayer();
+                  return;
+                }
+              } else if (h.type === "saw") {
+                const dx = this.player.x + this.player.w / 2 - h.curX;
+                const dy = this.player.y + this.player.h / 2 - h.curY;
+                if (dx * dx + dy * dy < (h.r + this.player.w / 2.3) ** 2) {
+                  this.killPlayer();
+                  return;
+                }
+              } else if (h.type === "laserBar") {
+                if (h.pulse && !h.isActive) continue;
+                if (this.player.checkAABB(this.player, h)) {
+                  this.killPlayer();
+                  return;
+                }
+              }
+            }
+
+            // جمع‌آوری قطعات داده (Fragments)
+            for (const f of this.currentStage.fragments) {
+              if (!f.collected) {
+                const dx = this.player.x + this.player.w / 2 - f.x;
+                const dy = this.player.y + this.player.h / 2 - f.y;
+                if (dx * dx + dy * dy < (f.r + this.player.w / 2) ** 2) {
+                  f.collected = true;
+                  audio.collect();
+                  ps.emit(f.x, f.y, 18, "#ffaa00", 4, 0.03, 3);
+
+                  if (
+                    this.currentStage.fragments.every((item) => item.collected)
+                  ) {
+                    this.currentStage.gate.isOpen = true;
+                    audio.gateOpen();
+                    this.triggerShake(5, 10);
+                    ps.emit(
+                      this.currentStage.gate.x + 18,
+                      this.currentStage.gate.y + 30,
+                      30,
+                      "#00ff66",
+                      5,
+                      0.02,
+                      4,
+                    );
+                  }
+                }
+              }
+            }
+
+            // بررسی ورود به درگاه خروج
+            const gate = this.currentStage.gate;
+            if (gate.isOpen && this.player.checkAABB(this.player, gate)) {
+              audio.win();
+              ProgressStore.markComplete(this.stageIndex);
+              this.stageWinTimer = 65;
+              setTimeout(() => {
+                if (this.stageIndex < STAGES.length - 1) {
+                  this.loadStage(this.stageIndex + 1);
+                } else {
+                  this.gameWon = true;
+                }
+              }, 1100);
+            }
+          }
+
+          // ۶. تعقیب دوربین متناسب با موقعیت پلیر در دنیای بازی
+          this.camera.update(
+            this.player.x + this.player.w / 2,
+            this.player.y + this.player.h / 2,
+            this.currentStage.worldW,
+            this.currentStage.worldH,
+          );
+
+          this.input.jumpPressed = false;
+        }
+
+        draw() {
+          const dpr = window.devicePixelRatio || 1;
+          const rect = this.container.getBoundingClientRect();
+
+          this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+          this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+          // مقیاس‌بندی هوشمند صفحه رندر بر اساس نسبت بوم به دنیای دوربین (۹۶۰ در ۵۴۰)
+          const scale = Math.min(
+            this.canvas.width / 960,
+            this.canvas.height / 540,
+          );
+          const offsetX = (this.canvas.width - 960 * scale) / 2;
+          const offsetY = (this.canvas.height - 540 * scale) / 2;
+
+          this.ctx.save();
+          this.ctx.translate(offsetX, offsetY);
+          this.ctx.scale(scale, scale);
+
+          // لرزش صفحه هنگام ضربه یا باز شدن گیت
+          if (this.shakeTimer > 0) {
+            this.shakeTimer--;
+            this.ctx.translate(
+              (Math.random() - 0.5) * this.shakeAmount,
+              (Math.random() - 0.5) * this.shakeAmount,
+            );
+          }
+
+          // پس‌زمینه شبکه سایبرپانکی
+          this.ctx.fillStyle = "#050612";
+          this.ctx.fillRect(0, 0, 960, 540);
+
+          // انتقال دوربین به مختصات جاری نقشه
+          this.ctx.save();
+          // Zoom around the logical viewport center before applying camera coordinates.
+          this.ctx.translate(480, 270);
+          this.ctx.scale(this.camera.zoom, this.camera.zoom);
+          this.ctx.translate(-480, -270);
+          this.ctx.translate(-this.camera.x, -this.camera.y);
+
+          // رسم شبکه شطرنجی پس‌زمینه
+          this.ctx.strokeStyle = "rgba(0, 243, 255, 0.04)";
+          this.ctx.lineWidth = 1;
+          const startGridX = Math.floor(this.camera.x / 50) * 50;
+          const startGridY = Math.floor(this.camera.y / 50) * 50;
+          for (let x = startGridX; x < this.camera.x + this.camera.viewW; x += 50) {
+            this.ctx.beginPath();
+            this.ctx.moveTo(x, this.camera.y);
+            this.ctx.lineTo(x, this.camera.y + this.camera.viewH);
+            this.ctx.stroke();
+          }
+          for (let y = startGridY; y < this.camera.y + this.camera.viewH; y += 50) {
+            this.ctx.beginPath();
+            this.ctx.moveTo(this.camera.x, y);
+            this.ctx.lineTo(this.camera.x + this.camera.viewW, y);
+            this.ctx.stroke();
+          }
+
+          // نمایش هاله بازسازی سکوهای قرمز در حال بازگشت (۱۰ ثانیه)
+          for (const p of this.currentStage.platforms) {
+            if (!p.isBroken || !p.crumble) continue;
+            const frac = 1 - p.respawnTimer / (p.respawnTotal || 600);
+            const grow = Math.min(1, frac * 1.4);
+            this.ctx.save();
+            this.ctx.globalAlpha =
+              0.12 +
+              0.25 * grow * (0.6 + 0.4 * Math.sin(performance.now() * 0.008));
+            this.ctx.strokeStyle = "#ff0055";
+            this.ctx.fillStyle = "rgba(255, 0, 85, 0.15)";
+            this.ctx.lineWidth = 1.5;
+            this.ctx.shadowColor = "#ff0055";
+            this.ctx.shadowBlur = 10;
+            const bw = p.w * grow;
+            const bh = p.h * grow;
+            this.ctx.fillRect(
+              p.x + (p.w - bw) / 2,
+              p.y + (p.h - bh) / 2,
+              bw,
+              bh,
+            );
+            this.ctx.strokeRect(
+              p.x + (p.w - bw) / 2,
+              p.y + (p.h - bh) / 2,
+              bw,
+              bh,
+            );
+            this.ctx.restore();
+          }
+
+          // رسم سکوها و موانع محیطی
+          for (const p of this.currentStage.platforms) {
+            if (p.isBroken) continue;
+            this.ctx.save();
+            if (p.crumble && p.stepped) {
+              this.ctx.translate(
+                (Math.random() - 0.5) * 2,
+                (Math.random() - 0.5) * 2,
+              );
+            }
+
+            this.ctx.fillStyle = p.crumble ? "#221124" : "#0c1224";
+            this.ctx.fillRect(p.x, p.y, p.w, p.h);
+
+            const neonEdgeColor = p.crumble
+              ? "#ff0055"
+              : p.moveX || p.moveY
+                ? "#9d00ff"
+                : "#00f3ff";
+            this.ctx.fillStyle = neonEdgeColor;
+            this.ctx.shadowColor = neonEdgeColor;
+            this.ctx.shadowBlur = 10;
+            this.ctx.fillRect(p.x, p.y, p.w, 3);
+            this.ctx.restore();
+          }
+
+          // رسم پدهای پرتابگر
+          for (const b of this.currentStage.boosters) {
+            this.ctx.save();
+            this.ctx.fillStyle = "#00ff66";
+            this.ctx.shadowColor = "#00ff66";
+            this.ctx.shadowBlur = 14;
+            this.ctx.fillRect(b.x, b.y, b.w, b.h);
+            this.ctx.fillStyle = "#fff";
+            this.ctx.fillRect(b.x + b.w / 2 - 3, b.y + 2, 6, b.h - 4);
+            this.ctx.restore();
+          }
+
+          // رسم تله‌ها (Spikes / Saws / Lasers)
+          for (const h of this.currentStage.hazards) {
+            this.ctx.save();
+            if (h.type === "spikes") {
+              const count = Math.max(1, Math.floor(h.w / 14));
+              const step = h.w / count;
+              this.ctx.fillStyle = "#ff0055";
+              this.ctx.shadowColor = "#ff0055";
+              this.ctx.shadowBlur = 12;
+              for (let i = 0; i < count; i++) {
+                const sx = h.x + i * step;
+                this.ctx.beginPath();
+                this.ctx.moveTo(sx, h.y + h.h);
+                this.ctx.lineTo(sx + step / 2, h.y);
+                this.ctx.lineTo(sx + step, h.y + h.h);
+                this.ctx.fill();
+              }
+            } else if (h.type === "saw") {
+              const x = h.curX || h.cx;
+              const y = h.curY || h.cy;
+              this.ctx.translate(x, y);
+              this.ctx.rotate(performance.now() * 0.015);
+              this.ctx.fillStyle = "rgba(255, 0, 85, 0.25)";
+              this.ctx.strokeStyle = "#ff0055";
+              this.ctx.shadowColor = "#ff0055";
+              this.ctx.shadowBlur = 15;
+              this.ctx.lineWidth = 2.5;
+              this.ctx.beginPath();
+              for (let i = 0; i < 16; i++) {
+                const angle = (i * Math.PI) / 8;
+                const dist = i % 2 === 0 ? h.r : h.r * 0.55;
+                this.ctx.lineTo(Math.cos(angle) * dist, Math.sin(angle) * dist);
+              }
+              this.ctx.closePath();
+              this.ctx.fill();
+              this.ctx.stroke();
+            } else if (h.type === "laserBar") {
+              if (!h.pulse || h.isActive) {
+                this.ctx.fillStyle = "#ff0055";
+                this.ctx.shadowColor = "#ff0055";
+                this.ctx.shadowBlur = 16;
+                this.ctx.fillRect(h.x, h.y, h.w, h.h);
+              } else {
+                this.ctx.strokeStyle = "rgba(255, 0, 85, 0.2)";
+                this.ctx.strokeRect(h.x, h.y, h.w, h.h);
+              }
+            }
+            this.ctx.restore();
+          }
+
+          // رسم درگاه خروج نئونی (Cyber Gate)
+          const g = this.currentStage.gate;
+          this.ctx.save();
+          this.ctx.translate(g.x, g.y);
+          const gateColor = g.isOpen ? "#00ff66" : "#7700aa";
+          this.ctx.strokeStyle = gateColor;
+          this.ctx.shadowColor = gateColor;
+          this.ctx.shadowBlur = g.isOpen ? 22 : 8;
+          this.ctx.lineWidth = 3;
+          this.ctx.strokeRect(0, 0, g.w, g.h);
+          this.ctx.fillStyle = g.isOpen
+            ? "rgba(0, 255, 102, 0.35)"
+            : "rgba(15, 10, 25, 0.85)";
+          this.ctx.fillRect(3, 3, g.w - 6, g.h - 6);
+          this.ctx.restore();
+
+          // رسم تکه‌های داده نئونی (Fragments)
+          const animTime = performance.now() * 0.003;
+          for (const f of this.currentStage.fragments) {
+            if (f.collected) continue;
+            this.ctx.save();
+            this.ctx.translate(f.x, f.y + Math.sin(animTime * 2 + f.x) * 4);
+            this.ctx.rotate(animTime);
+            this.ctx.fillStyle = "#ffaa00";
+            this.ctx.shadowColor = "#ffaa00";
+            this.ctx.shadowBlur = 16;
+            this.ctx.beginPath();
+            this.ctx.moveTo(0, -f.r);
+            this.ctx.lineTo(f.r, 0);
+            this.ctx.lineTo(0, f.r);
+            this.ctx.lineTo(-f.r, 0);
+            this.ctx.closePath();
+            this.ctx.fill();
+            this.ctx.restore();
+          }
+
+          // رسم ربات و ذرات
+          this.player.draw(this.ctx);
+          ps.draw(this.ctx);
+
+          this.ctx.restore(); // اتمام رندر دوربین
+
+          // پیام پیروزی مرحله و پایان بازی
+          if (this.stageWinTimer > 0 || this.gameWon) {
+            this.ctx.fillStyle = "rgba(5, 7, 18, 0.85)";
+            this.ctx.fillRect(0, 0, 960, 540);
+            this.ctx.textAlign = "center";
+            this.ctx.shadowColor = "#00ff66";
+            this.ctx.shadowBlur = 24;
+            this.ctx.fillStyle = "#00ff66";
+            this.ctx.font = "bold 40px IRANYekan, sans-serif";
+            this.ctx.fillText("شما موفق شدید!", 480, 270);
+          }
+
+          this.ctx.restore();
+        }
+
+        loop() {
+          this.update();
+          this.draw();
+          requestAnimationFrame(this.loop);
+        }
+      }
+
+      // راه‌اندازی پس از بارگذاری کامل صفحه
+      window.addEventListener("load", () => {
+        new GameEngine();
+      });
+    </script>
+  </body>
+</html>
