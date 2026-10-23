@@ -1,0 +1,57 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Setup Java JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Prepare Project & Capacitor
+        run: |
+          npm init -y
+          npm install @capacitor/core @capacitor/cli @capacitor/android
+          npx cap init "CoreHopper" "com.cyberpunk.corehopper" --web-dir .
+          npx cap add android
+
+      - name: Build Debug APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: CoreHopper-Debug-APK
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+
+4. روی دکمه سبز بالای صفحه یا پایین صفحه به نام **`Commit changes...`** کلیک کنید و دوباره تایید کنید.
+
+---
+
+### ۲. دریافت فایل APK:
+- بعد از ثبت تغییرات، از تب‌های بالای صفحه به بخش **`Actions`** بروید.
+- یک فرآیند به نام **Build Android APK** را می‌بینید که در حال اجراست (علامت زرد در حال چرخش).
+- حدود ۳ تا ۵ دقیقه طول می‌کشد تا سرور گیت‌هاب فایل را بسازد و تیک سبز بخورد.
+- پس از اتمام، روی آن کلیک کنید و در بخش پایین صفحه (قسمت **Artifacts**)، فایل **`CoreHopper-Debug-APK`** را دانلود کنید!
