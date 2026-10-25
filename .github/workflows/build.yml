@@ -29,14 +29,27 @@ jobs:
           mkdir -p www
           cp index.html www/
           if [ -d "assets" ]; then cp -r assets www/; fi
+          if [ -f "icon.png" ]; then cp icon.png www/; fi
           if [ -f "icon.ico" ]; then cp icon.ico www/; fi
 
       - name: Install Capacitor & Android Platform
         run: |
           npm init -y
-          npm install @capacitor/core @capacitor/cli @capacitor/android
+          npm install @capacitor/core @capacitor/cli @capacitor/android @capacitor/assets
           npx cap init "CoreHopper" "com.corehopper.game" --web-dir www
           npx cap add android
+
+      - name: Generate App Icons
+        run: |
+          if [ -f "icon.png" ]; then
+            # تولید خودکار آیکون در تمام سایزهای استاندارد اندروید
+            npx @capacitor/assets generate --android --iconSource icon.png
+          fi
+
+      - name: Configure Fullscreen & Hide Bars
+        run: |
+          sed -i 's/<style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">/<style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">\n        <item name="android:windowFullscreen">true<\/item>\n        <item name="android:windowContentOverlay">@null<\/item>/' android/app/src/main/res/values/styles.xml
+          sed -i 's/android:name=".MainActivity"/android:name=".MainActivity" android:screenOrientation="sensorLandscape"/' android/app/src/main/AndroidManifest.xml
 
       - name: Build Debug APK
         run: |
